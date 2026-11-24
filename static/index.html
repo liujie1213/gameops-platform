@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>游戏安全运营平台</title><link rel="stylesheet" href="/style.css"><script defer src="/app.js"></script>
+</head><body>
+<section class="auth-wrap" id="login" hidden><div class="auth-card"><div class="auth-brand"><span class="logo" aria-hidden="true">❖</span>游戏安全运营平台</div><h1>管理员登录</h1><form id="login-form"><label>管理密码<input type="password" name="password" autocomplete="current-password" aria-describedby="login-help" required></label><p id="login-help" class="muted">本机启动时，管理密码会显示在启动服务的窗口中。</p><p id="login-error" role="alert"></p><button class="primary">登录工作台</button></form></div></section>
+<div id="shell" hidden>
+  <aside class="side" id="sidebar"><div class="brand"><span class="logo" aria-hidden="true">❖</span>游戏安全运营平台</div>
+    <nav aria-label="运营导航">
+      <button data-go="overview"><span class="icon" aria-hidden="true">◴</span>工作台</button>
+      <details open><summary><span class="icon" aria-hidden="true">◇</span>行为触发</summary><button data-go="reports">举报管理</button><button data-go="matches">局后判定</button><button data-go="penalties">处罚记录</button><button data-go="policy">规则配置</button></details>
+      <button data-go="audit"><span class="icon" aria-hidden="true">▤</span>审计中心</button>
+      <details open><summary><span class="icon" aria-hidden="true">▣</span>内容安全</summary><button data-go="words">聊天黑白库</button><button data-go="chat">聊天审核记录</button></details>
+      <button data-go="games"><span class="icon" aria-hidden="true">⌘</span>游戏接入</button>
+    </nav><div class="account">当前身份 <span class="badge blue">平台管理员</span></div>
+  </aside><button class="shade" id="shade" aria-label="关闭侧栏"></button>
+  <header><button id="menu" class="top-action" aria-label="展开或收起导航" aria-controls="sidebar">☰</button><span id="crumb">工作台</span><div class="top-right"><select id="game" aria-label="当前游戏"></select><button id="logout" class="top-action">退出</button></div></header>
+  <main><div class="page-title"><div><h1 id="page-title"></h1><p id="scope" class="muted"></p></div><button id="reload" class="secondary">刷新</button></div><p id="notice" role="status" hidden></p><div id="view" aria-live="polite"></div></main>
+</div>
+<dialog id="modal" aria-labelledby="modal-title"><div class="dialog-head"><h2 id="modal-title"></h2><button class="secondary" id="dismiss">关闭</button></div><div id="modal-body"></div></dialog>
+</body></html>
