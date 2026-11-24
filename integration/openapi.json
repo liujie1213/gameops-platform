@@ -1,0 +1,803 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "游戏安全运营平台 · 游戏服务端接口",
+    "version": "1.0.0",
+    "description": "每一游戏使用独立 Bearer 游戏密钥。所有 POST 事件须使用跨类型唯一 event_id。同一编号同一请求体可安全重放，使用同一编号更改内容会返回 409。时间单位统一为 UTC Unix 秒。"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8765/api/v1",
+      "description": "本机；远程部署使用对应 HTTPS 根地址与 /api/v1。"
+    }
+  ],
+  "security": [
+    {
+      "gameBearer": []
+    }
+  ],
+  "paths": {
+    "/chat": {
+      "post": {
+        "operationId": "moderateChat",
+        "summary": "聊天发送前审核",
+        "description": "游戏服等待结果再发送消息，完整匹配白库时优先放行。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatDecision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/HTTP400"
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "409": {
+            "$ref": "#/components/responses/HTTP409"
+          },
+          "413": {
+            "$ref": "#/components/responses/HTTP413"
+          },
+          "415": {
+            "$ref": "#/components/responses/HTTP415"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        }
+      }
+    },
+    "/reports": {
+      "post": {
+        "operationId": "submitReport",
+        "summary": "上报玩家举报",
+        "description": "玩家、类别与事件时间计入该游戏的举报窗口。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/HTTP400"
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "409": {
+            "$ref": "#/components/responses/HTTP409"
+          },
+          "413": {
+            "$ref": "#/components/responses/HTTP413"
+          },
+          "415": {
+            "$ref": "#/components/responses/HTTP415"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        }
+      }
+    },
+    "/levels": {
+      "post": {
+        "operationId": "submitLevel",
+        "summary": "上报等级",
+        "description": "按业务发生时刻定位等级历史。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LevelInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/HTTP400"
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "409": {
+            "$ref": "#/components/responses/HTTP409"
+          },
+          "413": {
+            "$ref": "#/components/responses/HTTP413"
+          },
+          "415": {
+            "$ref": "#/components/responses/HTTP415"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        }
+      }
+    },
+    "/matches": {
+      "post": {
+        "operationId": "settleMatch",
+        "summary": "提交单玩家对局结算",
+        "description": "每位玩家的同一场对局只结算一次。举报统计窗口为 (T−86400,T]，只计已成功上报的事件。observe 只记录，enforce 命中可发出处罚指令。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDecision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/HTTP400"
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "409": {
+            "$ref": "#/components/responses/HTTP409"
+          },
+          "413": {
+            "$ref": "#/components/responses/HTTP413"
+          },
+          "415": {
+            "$ref": "#/components/responses/HTTP415"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        }
+      }
+    },
+    "/commands": {
+      "get": {
+        "operationId": "getPendingCommands",
+        "summary": "领取待执行命令",
+        "description": "返回本游戏最早最多 100 条待执行、未过期的指令。重复拉取可能见到同一指令。",
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommandPage"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        }
+      }
+    },
+    "/receipts": {
+      "post": {
+        "operationId": "acknowledgeCommand",
+        "summary": "上报执行回执",
+        "description": "在游戏端以 command_id 去重并提交执行结果后发送。",
+        "responses": {
+          "200": {
+            "description": "调用成功。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReceiptResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/HTTP400"
+          },
+          "401": {
+            "$ref": "#/components/responses/HTTP401"
+          },
+          "403": {
+            "$ref": "#/components/responses/HTTP403"
+          },
+          "404": {
+            "$ref": "#/components/responses/HTTP404"
+          },
+          "409": {
+            "$ref": "#/components/responses/HTTP409"
+          },
+          "413": {
+            "$ref": "#/components/responses/HTTP413"
+          },
+          "415": {
+            "$ref": "#/components/responses/HTTP415"
+          },
+          "503": {
+            "$ref": "#/components/responses/HTTP503"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiptInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "gameBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "运营后台创建的独立游戏密钥。"
+      }
+    },
+    "schemas": {
+      "Id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "非空稳定编号。",
+        "pattern": "\\S"
+      },
+      "EventId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "description": "同游戏内跨事件类型唯一。重试保留原值及完整请求字段。",
+        "pattern": "\\S"
+      },
+      "EventTime": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "业务发生时刻，UTC Unix 秒，最多领先服务器 60 秒。省略时使用接收时间。"
+      },
+      "Timestamp": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Unix 秒，UTC。"
+      },
+      "ChatInput": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/EventId"
+          },
+          "occurred_at": {
+            "$ref": "#/components/schemas/EventTime"
+          },
+          "player_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "event_id",
+          "player_id",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "ChatDecision": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "allow",
+              "block"
+            ]
+          },
+          "hits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "allowed_by": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "完整匹配的白库词条，其他结果为 null。"
+          }
+        },
+        "required": [
+          "decision",
+          "hits",
+          "allowed_by"
+        ]
+      },
+      "LevelInput": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/EventId"
+          },
+          "occurred_at": {
+            "$ref": "#/components/schemas/EventTime"
+          },
+          "player_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": [
+          "event_id",
+          "player_id",
+          "level"
+        ],
+        "additionalProperties": false
+      },
+      "ReportInput": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/EventId"
+          },
+          "occurred_at": {
+            "$ref": "#/components/schemas/EventTime"
+          },
+          "player_id": {
+            "$ref": "#/components/schemas/Id",
+            "description": "被举报人"
+          },
+          "reporter_id": {
+            "$ref": "#/components/schemas/Id",
+            "description": "举报人"
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "\\S"
+          }
+        },
+        "required": [
+          "event_id",
+          "player_id",
+          "reporter_id",
+          "category"
+        ],
+        "additionalProperties": false
+      },
+      "MatchInput": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/EventId"
+          },
+          "occurred_at": {
+            "$ref": "#/components/schemas/EventTime"
+          },
+          "player_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "match_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "game_type": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "当前规则面向普通爆破 2、排位爆破 5。"
+          },
+          "kd": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "kill_num": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "average_rank": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "对局玩家平均等级。"
+          },
+          "level": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647,
+            "description": "可由此前上报的等级事件提供。"
+          }
+        },
+        "required": [
+          "event_id",
+          "player_id",
+          "match_id",
+          "game_type",
+          "kd",
+          "kill_num",
+          "average_rank"
+        ],
+        "additionalProperties": false
+      },
+      "Accepted": {
+        "type": "object",
+        "properties": {
+          "accepted": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "accepted"
+        ]
+      },
+      "MatchDecision": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "clear",
+              "hit",
+              "observed",
+              "out_of_scope",
+              "disabled"
+            ]
+          },
+          "hits": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "report_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "level": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "command_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "policy_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enforcement": {
+            "type": "string",
+            "enum": [
+              "observe",
+              "enforce"
+            ]
+          },
+          "report_mode": {
+            "type": "string",
+            "enum": [
+              "events",
+              "reporters"
+            ]
+          },
+          "report_category": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "hits",
+          "report_count",
+          "level",
+          "command_id",
+          "policy_version",
+          "enforcement",
+          "report_mode",
+          "report_category"
+        ]
+      },
+      "ReceiptInput": {
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "$ref": "#/components/schemas/EventId"
+          },
+          "occurred_at": {
+            "$ref": "#/components/schemas/EventTime"
+          },
+          "command_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "event_id",
+          "command_id",
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "ReceiptResult": {
+        "type": "object",
+        "properties": {
+          "command_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed"
+            ]
+          }
+        },
+        "required": [
+          "command_id",
+          "status"
+        ]
+      },
+      "PendingCommand": {
+        "type": "object",
+        "properties": {
+          "command_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "player_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "match_id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "action": {
+            "type": "string",
+            "const": "freeze"
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "const": 21600
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "expires_at": {
+            "$ref": "#/components/schemas/Timestamp",
+            "description": "固定的绝对到期秒数，重复领取时沿用。"
+          },
+          "status": {
+            "type": "string",
+            "const": "pending"
+          },
+          "hits": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            }
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "command_id",
+          "player_id",
+          "match_id",
+          "action",
+          "duration_seconds",
+          "created_at",
+          "expires_at",
+          "status",
+          "hits",
+          "message"
+        ]
+      },
+      "CommandPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PendingCommand"
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      }
+    },
+    "responses": {
+      "HTTP400": {
+        "description": "字段、时间或 JSON 无效，或缺少结算时等级。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP401": {
+        "description": "游戏密钥缺失或无效。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP403": {
+        "description": "请求地址或来源不符合部署配置。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP404": {
+        "description": "接口或本游戏的命令不存在。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP409": {
+        "description": "同一编号关联不同数据、重复结算或回执状态冲突。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP413": {
+        "description": "请求体过大。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP415": {
+        "description": "POST 必须使用 application/json。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "HTTP503": {
+        "description": "数据库繁忙或暂时不可用。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}
